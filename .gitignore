@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build output
+app/dist/
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Prisma
+server/prisma/migrations/**/migration_lock.toml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Misc
+app/nul

@@ -1,0 +1,201 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+}
+
+enum RegistrationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum Recurrence {
+  NONE
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum ProjectStatus {
+  ONGOING
+  COMPLETED
+  UPCOMING
+}
+
+model User {
+  id               String         @id @default(cuid())
+  name             String
+  email            String         @unique
+  phone            String?
+  passwordHash     String?
+  authProvider      AuthProvider    @default(EMAIL)
+  googleId         String?        @unique
+  avatarUrl        String?
+  role             Role           @default(USER)
+  emailVerified    Boolean        @default(false)
+  emailVerifyToken String?
+  refreshToken     String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  registrations    Registration[]
+}
+
+model Course {
+  id               String           @id @default(cuid())
+  title            String
+  description      String
+  instructor       String           @default("Acharya Navneetji")
+  duration         String
+  level            String           @default("Beginner")
+  thumbnail        String?
+  videoUrl         String?
+  startDate        DateTime
+  endDate          DateTime
+  isActive         Boolean          @default(true)
+  maxParticipants  Int?             @default(50)
+  registeredCount  Int              @default(0)
+  recurrence       Recurrence       @default(NONE)
+  recurrenceDays   String?
+  sessionTime      String?
+  sessionDuration  Int?
+  timezone         String?          @default("Asia/Kolkata")
+  joinLink         String?
+  paymentLink      String?
+  visibility       Visibility       @default(PUBLIC)
+  sortOrder        Int              @default(0)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  materials        CourseMaterial[]
+  sessions         CourseSession[]
+  registrations    Registration[]
+}
+
+model CourseMaterial {
+  id          String   @id @default(cuid())
+  title       String
+  type        String   @default("pdf")
+  url         String
+  description String?
+  sortOrder   Int      @default(0)
+  courseId     String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model CourseSession {
+  id           String   @id @default(cuid())
+  title        String
+  date         DateTime
+  recordingUrl String?
+  courseId      String
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+}
+
+model Talk {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  youtubeUrl  String
+  thumbnail   String?
+  duration    String
+  category    String
+  tags        String[]
+  date        DateTime
+  featured    Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Book {
+  id           String   @id @default(cuid())
+  title        String
+  author       String   @default("Acharya Navneetji")
+  description  String
+  coverImage   String?
+  publishYear  Int
+  category     String
+  purchaseLink String?
+  featured     Boolean  @default(false)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Download {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String
+  fileUrl     String
+  fileType    String
+  fileSize    Int?
+  thumbnail   String?
+  featured    Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  coverImage  String?
+  category    String
+  status      ProjectStatus @default(ONGOING)
+  location    String?
+  impactStats Json?
+  gallery     String[]
+  featured    Boolean       @default(false)
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Registration {
+  id               String             @id @default(cuid())
+  userId           String
+  courseId          String
+  status           RegistrationStatus @default(CONFIRMED)
+  registrationDate DateTime           @default(now())
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course           Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+}
+
+model SiteSettings {
+  id                  String   @id @default("singleton")
+  siteName            String   @default("Guidance Zone")
+  logoUrl             String?
+  heroImages          Json?
+  aboutContent        Json?
+  contactEmail        String?
+  socialLinks         Json?
+  satsangSchedule     Json?
+  announcementBanner  String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
