@@ -485,7 +485,7 @@ export function Home() {
                 >
                   <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-xl overflow-hidden flex-shrink-0">
                     <img
-                      src={book.coverImage}
+                      src={book.coverImage ?? undefined}
                       alt={book.title}
                       className="w-full h-full object-cover"
                     />

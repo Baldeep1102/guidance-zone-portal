@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Users, BookOpen, Video, Library, TrendingUp, ArrowRight, Download, FolderKanban, Settings } from 'lucide-react';
+import { Users, BookOpen, Video, Library, TrendingUp, ArrowRight, Download, FolderKanban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useApi } from '@/hooks/useApi';
 import { adminApi } from '@/api/admin';

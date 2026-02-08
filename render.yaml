@@ -1,0 +1,34 @@
+databases:
+  - name: guzo-db
+    plan: free
+    databaseName: guzo
+    user: guzo
+
+services:
+  - type: web
+    name: guzo-portal
+    runtime: node
+    plan: free
+    buildCommand: npm run install:all && npm run build && cd server && npx prisma migrate deploy
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3001"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: guzo-db
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: FROM_EMAIL
+        value: noreply@guidancezone.org
+      - key: GOOGLE_CLIENT_ID
+        sync: false

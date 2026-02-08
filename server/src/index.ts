@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { env } from './config/env.js';
 import { errorHandler } from './middleware/error.js';
 
@@ -15,6 +17,7 @@ import usersRoutes from './routes/users.js';
 import adminRoutes from './routes/admin.js';
 import calendarRoutes from './routes/calendar.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 // Middleware
@@ -44,6 +47,16 @@ app.get('/api/health', (_req, res) => {
 
 // Error handler
 app.use(errorHandler);
+
+// In production, serve the built React frontend
+if (env.NODE_ENV === 'production') {
+  const clientDist = path.resolve(__dirname, '../../app/dist');
+  app.use(express.static(clientDist));
+  // SPA fallback — serve index.html for any non-API route
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+}
 
 app.listen(env.PORT, () => {
   console.log(`GuZo server running on http://localhost:${env.PORT}`);

@@ -195,12 +195,8 @@ export function Dashboard() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 rounded-xl bg-[#F9FAFB]">
-                  <p className="text-xs text-[#9CA3AF] mb-1">Phone</p>
-                  <p className="text-sm text-[#374151]">{user.phone || '-'}</p>
-                </div>
-                <div className="p-4 rounded-xl bg-[#F9FAFB]">
-                  <p className="text-xs text-[#9CA3AF] mb-1">Member Since</p>
-                  <p className="text-sm text-[#374151]">{new Date(user.createdAt).toLocaleDateString()}</p>
+                  <p className="text-xs text-[#9CA3AF] mb-1">Email Verified</p>
+                  <p className="text-sm text-[#374151]">{user.emailVerified ? 'Yes' : 'No'}</p>
                 </div>
                 <div className="p-4 rounded-xl bg-[#F9FAFB]">
                   <p className="text-xs text-[#9CA3AF] mb-1">Courses</p>

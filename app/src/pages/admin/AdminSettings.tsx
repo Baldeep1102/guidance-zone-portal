@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Globe, Image, Info, Link2, Calendar, Bell } from 'lucide-react';
+import { Save, Globe, Info, Link2, Calendar, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { adminApi } from '@/api/admin';

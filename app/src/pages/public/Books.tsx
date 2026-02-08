@@ -102,7 +102,7 @@ export function Books() {
                 >
                   <div className="w-32 lg:w-40 h-44 lg:h-56 rounded-xl overflow-hidden flex-shrink-0">
                     <img
-                      src={book.coverImage}
+                      src={book.coverImage ?? undefined}
                       alt={book.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
@@ -148,7 +148,7 @@ export function Books() {
                 <div className="flex flex-col lg:flex-row gap-8">
                   <div className="w-full lg:w-64 h-80 lg:h-96 rounded-xl overflow-hidden flex-shrink-0">
                     <img
-                      src={selectedBook.coverImage}
+                      src={selectedBook.coverImage ?? undefined}
                       alt={selectedBook.title}
                       className="w-full h-full object-cover"
                     />
@@ -199,7 +199,7 @@ export function Books() {
               >
                 <div className="aspect-[3/4] rounded-[22px] overflow-hidden card-shadow-light mb-4">
                   <img
-                    src={book.coverImage}
+                    src={book.coverImage ?? undefined}
                     alt={book.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />

@@ -99,7 +99,7 @@ export function Talks() {
                 className="w-full h-[50vh] lg:h-[60vh] rounded-[28px] overflow-hidden card-shadow-light relative group cursor-pointer"
               >
                 <img
-                  src={talk.thumbnail}
+                  src={talk.thumbnail ?? undefined}
                   alt={talk.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
@@ -173,7 +173,7 @@ export function Talks() {
               >
                 <div className="relative aspect-video rounded-[22px] overflow-hidden card-shadow-light mb-4">
                   <img
-                    src={talk.thumbnail}
+                    src={talk.thumbnail ?? undefined}
                     alt={talk.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />

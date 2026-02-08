@@ -132,7 +132,7 @@ export function Courses() {
               <div className="flex flex-col lg:flex-row">
                 <div className="w-full lg:w-1/2 h-[30vh] lg:h-auto">
                   <img
-                    src={filteredCourses[0].thumbnail}
+                    src={filteredCourses[0].thumbnail ?? undefined}
                     alt={filteredCourses[0].title}
                     className="w-full h-full object-cover"
                   />
@@ -249,7 +249,7 @@ export function Courses() {
               >
                 <div className="aspect-video overflow-hidden">
                   <img
-                    src={course.thumbnail}
+                    src={course.thumbnail ?? undefined}
                     alt={course.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
