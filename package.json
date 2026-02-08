@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "install:all": "cd app && npm ci && cd ../server && npm ci",
+    "install:all": "cd app && npm ci --include=dev && cd ../server && npm ci --include=dev",
     "build": "cd app && npm run build && cd ../server && npx prisma generate",
     "start": "cd server && node --import tsx src/index.ts",
     "dev": "concurrently \"cd server && npm run dev\" \"cd app && npm run dev\""
