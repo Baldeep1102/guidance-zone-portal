@@ -9,7 +9,7 @@ services:
     name: guzo-portal
     runtime: node
     plan: free
-    buildCommand: npm run install:all && npm run build && cd server && npx prisma migrate deploy
+    buildCommand: npm run install:all && npm run build && cd server && npx prisma migrate deploy && npx prisma db seed
     startCommand: npm run start
     envVars:
       - key: NODE_ENV
