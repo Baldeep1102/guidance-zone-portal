@@ -1,0 +1,47 @@
+name: Deploy to VPS
+
+  on:
+    push:
+      branches:
+        - main
+
+  jobs:
+    deploy:
+      name: Deploy GuZo to BigRock VPS
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Deploy via SSH
+          uses: appleboy/ssh-action@v1.0.3
+          with:
+            host: ${{ secrets.VPS_HOST }}
+            username: root
+            key: ${{ secrets.VPS_SSH_KEY }}
+            script: |
+              set -e
+
+              echo "--- Pulling latest code ---"
+              cd /var/www/guzo
+              git pull origin main
+
+              echo "--- Installing server dependencies ---"
+              cd /var/www/guzo/server
+              npm install --include=dev
+
+              echo "--- Installing frontend dependencies ---"
+              cd /var/www/guzo/app
+              npm install --include=dev
+
+              echo "--- Building frontend ---"
+              npm run build
+
+              echo "--- Running Prisma migrations ---"
+              cd /var/www/guzo/server
+              npx prisma generate
+              npx prisma migrate deploy
+
+              echo "--- Restarting app ---"
+              pm2 restart guzo
+
+              echo "--- Deploy complete ---"
+              pm2 list
