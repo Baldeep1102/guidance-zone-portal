@@ -131,28 +131,28 @@ export interface Registration {
 
 // Site Settings Types
 export interface ColorScheme {
-  accent: string;
-  bgLight: string;
-  bgDark: string;
-  textPrimary: string;
-  textSecondary: string;
+  accent?: string;
+  bgLight?: string;
+  bgDark?: string;
+  textPrimary?: string;
+  textSecondary?: string;
 }
 
 export interface HeroContent {
-  headline: string;
-  subheadline: string;
-  ctaPrimary: string;
-  ctaSecondary: string;
+  headline?: string;
+  subheadline?: string;
+  ctaPrimary?: string;
+  ctaSecondary?: string;
 }
 
 export interface CtaContent {
-  headline: string;
-  subheadline: string;
+  headline?: string;
+  subheadline?: string;
 }
 
 export interface FooterContent {
-  tagline: string;
-  copyright: string;
+  tagline?: string;
+  copyright?: string;
 }
 
 export interface SiteSettings {

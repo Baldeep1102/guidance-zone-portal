@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { adminApi } from '@/api/admin';
 import { useApi } from '@/hooks/useApi';
-import type { SiteSettings } from '@/types';
+import type { SiteSettings, ColorScheme, HeroContent, CtaContent, FooterContent } from '@/types';
 
 type Tab = 'branding' | 'hero' | 'theme' | 'about' | 'social' | 'satsang' | 'announcement';
 
@@ -82,16 +82,16 @@ export function AdminSettings() {
   const social = (formData.socialLinks || {}) as Record<string, string>;
   const satsang = (formData.satsangSchedule || {}) as Record<string, string>;
   const about = (formData.aboutContent || {}) as Record<string, any>;
-  const hero = (formData.heroContent || {}) as Record<string, string>;
-  const cta = (formData.ctaContent || {}) as Record<string, string>;
-  const footer = (formData.footerContent || {}) as Record<string, string>;
+  const hero = (formData.heroContent || {}) as HeroContent;
+  const cta = (formData.ctaContent || {}) as CtaContent;
+  const footer = (formData.footerContent || {}) as FooterContent;
   const colorScheme = (formData.colorScheme || {
     accent: '#7B6CFF',
     bgLight: '#F6F7F9',
     bgDark: '#101422',
     textPrimary: '#111827',
     textSecondary: '#6B7280',
-  }) as Record<string, string>;
+  }) as ColorScheme;
   const heroImages = (formData.heroImages || []) as string[];
 
   if (loading) {
@@ -310,13 +310,15 @@ export function AdminSettings() {
               <h2 className="font-heading text-lg font-semibold text-[#111827]">Color Theme</h2>
               <p className="text-sm text-[#6B7280]">These colors are applied as CSS variables across the site. Reload the page after saving to see changes.</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-xl">
-                {[
-                  { key: 'accent', label: 'Accent Color' },
-                  { key: 'bgLight', label: 'Light Background' },
-                  { key: 'bgDark', label: 'Dark Background' },
-                  { key: 'textPrimary', label: 'Primary Text' },
-                  { key: 'textSecondary', label: 'Secondary Text' },
-                ].map(({ key, label }) => (
+                {(
+                  [
+                    { key: 'accent' as const, label: 'Accent Color' },
+                    { key: 'bgLight' as const, label: 'Light Background' },
+                    { key: 'bgDark' as const, label: 'Dark Background' },
+                    { key: 'textPrimary' as const, label: 'Primary Text' },
+                    { key: 'textSecondary' as const, label: 'Secondary Text' },
+                  ] as { key: keyof ColorScheme; label: string }[]
+                ).map(({ key, label }) => (
                   <div key={key}>
                     <label className="text-sm text-[#374151] mb-2 block">{label}</label>
                     <div className="flex items-center gap-3">
