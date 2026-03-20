@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Navbar } from '@/components/navigation/Navbar';
@@ -35,23 +35,62 @@ import { AdminProjects } from '@/pages/admin/AdminProjects';
 import { AdminUsers } from '@/pages/admin/AdminUsers';
 import { AdminSettings } from '@/pages/admin/AdminSettings';
 
-// Inject color scheme CSS variables from site settings
-function CssVariableInjector() {
+// Slightly darken a hex color for hover states
+function darkenHex(hex: string, amount = 0.1): string {
+  const n = parseInt(hex.replace('#', ''), 16);
+  const r = Math.max(0, (n >> 16) - Math.round(255 * amount));
+  const g = Math.max(0, ((n >> 8) & 0xff) - Math.round(255 * amount));
+  const b = Math.max(0, (n & 0xff) - Math.round(255 * amount));
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+}
+
+// Loads site settings once: injects theme overrides + renders announcement banner
+function SiteSettingsLoader() {
+  const [banner, setBanner] = useState('');
+
   useEffect(() => {
     client.get<SiteSettings>('/settings').then((res) => {
-      const scheme = res.data.colorScheme;
-      if (!scheme) return;
-      const root = document.documentElement;
-      if (scheme.accent) root.style.setProperty('--guzo-accent', scheme.accent);
-      if (scheme.bgLight) root.style.setProperty('--guzo-bg-light', scheme.bgLight);
-      if (scheme.bgDark) root.style.setProperty('--guzo-bg-dark', scheme.bgDark);
-      if (scheme.textPrimary) root.style.setProperty('--guzo-text-primary', scheme.textPrimary);
-      if (scheme.textSecondary) root.style.setProperty('--guzo-text-secondary', scheme.textSecondary);
-    }).catch(() => {
-      // silently fail — defaults from CSS will apply
-    });
+      const s = res.data;
+
+      // Announcement banner
+      setBanner(s.announcementBanner || '');
+      // Store banner presence as CSS variable so Navbar can offset its top
+      document.documentElement.style.setProperty('--announcement-h', s.announcementBanner ? '36px' : '0px');
+
+      // Theme — inject a <style> tag that overrides Tailwind's hardcoded accent classes
+      const accent = s.colorScheme?.accent || '#7B6CFF';
+      const accentHover = darkenHex(accent, 0.08);
+
+      let styleEl = document.getElementById('guzo-theme') as HTMLStyleElement | null;
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'guzo-theme';
+        document.head.appendChild(styleEl);
+      }
+      // Target Tailwind's escaped arbitrary-value class names
+      styleEl.textContent = `
+        .bg-\\[\\#7B6CFF\\] { background-color: ${accent} !important; }
+        .hover\\:bg-\\[\\#6B5CFF\\]:hover { background-color: ${accentHover} !important; }
+        .hover\\:bg-\\[\\#7B6CFF\\]:hover { background-color: ${accentHover} !important; }
+        .text-\\[\\#7B6CFF\\] { color: ${accent} !important; }
+        .border-\\[\\#7B6CFF\\] { border-color: ${accent} !important; }
+        .ring-\\[\\#7B6CFF\\] { --tw-ring-color: ${accent} !important; }
+        .focus\\:ring-\\[\\#7B6CFF\\]:focus { --tw-ring-color: ${accent} !important; }
+        .focus\\:border-\\[\\#7B6CFF\\]:focus { border-color: ${accent} !important; }
+      `;
+    }).catch(() => {});
   }, []);
-  return null;
+
+  if (!banner) return null;
+
+  return (
+    <div
+      style={{ height: '36px' }}
+      className="fixed top-0 left-0 right-0 z-[70] bg-[#7B6CFF] text-white text-center text-sm flex items-center justify-center px-4"
+    >
+      {banner}
+    </div>
+  );
 }
 
 // Scroll to top on route change
@@ -90,7 +129,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <CssVariableInjector />
+        <SiteSettingsLoader />
         <ScrollToTop />
         <Routes>
           {/* Public Routes */}
