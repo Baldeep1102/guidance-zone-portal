@@ -1,12 +1,19 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Quote, Heart, BookOpen, Users, Sparkles } from 'lucide-react';
+import client from '@/api/client';
+import type { SiteSettings } from '@/types';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function About() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
+
+  useEffect(() => {
+    client.get<SiteSettings>('/settings').then((res) => setSettings(res.data)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -49,11 +56,17 @@ export function About() {
     return () => ctx.revert();
   }, []);
 
+  const aboutContent = (settings?.aboutContent || {}) as Record<string, any>;
+  const biography = aboutContent.biography || 'Acharya Navneetji is a contemporary spiritual teacher dedicated to making ancient wisdom accessible to modern seekers. With over 15 years of teaching experience, he has guided thousands of students on their journey of self-discovery.';
+  const philosophy = aboutContent.philosophy || '"The journey inward is the greatest adventure you will ever undertake. It requires courage, patience, and a willingness to let go of everything you think you know about yourself."';
+  const aboutImage = aboutContent.image || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&q=80';
+  const s = aboutContent.stats || {};
+
   const stats = [
-    { icon: BookOpen, value: '15+', label: 'Years of Teaching' },
-    { icon: Users, value: '50K+', label: 'Students Worldwide' },
-    { icon: Heart, value: '500+', label: 'Satsangs Conducted' },
-    { icon: Sparkles, value: '12', label: 'Books Published' },
+    { icon: BookOpen, value: s.yearsTeaching ? `${s.yearsTeaching}+` : '15+', label: 'Years of Teaching' },
+    { icon: Users, value: s.studentsGuided ? `${s.studentsGuided}+` : '50K+', label: 'Students Worldwide' },
+    { icon: Heart, value: s.coursesOffered ? `${s.coursesOffered}+` : '500+', label: 'Satsangs Conducted' },
+    { icon: Sparkles, value: s.countriesReached ? `${s.countriesReached}` : '12', label: 'Books Published' },
   ];
 
   return (
@@ -64,7 +77,7 @@ export function About() {
           {/* Image */}
           <div className="about-image w-full lg:w-[45vw] h-[50vh] lg:h-[70vh] rounded-[28px] overflow-hidden card-shadow-light flex-shrink-0">
             <img
-              src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&q=80"
+              src={aboutImage}
               alt="Acharya Navneetji"
               className="w-full h-full object-cover"
             />
@@ -78,14 +91,8 @@ export function About() {
             <h1 className="font-heading text-4xl lg:text-5xl xl:text-6xl font-semibold text-[#111827] mb-6 leading-tight">
               Acharya<br />Navneetji
             </h1>
-            <p className="text-[#6B7280] text-base lg:text-lg leading-relaxed mb-6">
-              Acharya Navneetji is a contemporary spiritual teacher dedicated to making ancient wisdom accessible to modern seekers. With over 15 years of teaching experience, he has guided thousands of students on their journey of self-discovery.
-            </p>
-            <p className="text-[#6B7280] text-base lg:text-lg leading-relaxed mb-6">
-              His teachings blend traditional meditation practices with practical insights for daily life, emphasizing that spirituality is not about escaping the world but engaging with it more fully and consciously.
-            </p>
             <p className="text-[#6B7280] text-base lg:text-lg leading-relaxed">
-              Through courses, satsangs, and writings, he offers a path that is both profound and practical—one that meets you where you are and guides you toward deeper understanding and inner peace.
+              {biography}
             </p>
           </div>
         </div>
@@ -95,7 +102,7 @@ export function About() {
           <div className="max-w-4xl mx-auto text-center">
             <Quote className="w-12 h-12 text-[#7B6CFF] mx-auto mb-6 opacity-50" />
             <blockquote className="font-heading text-2xl lg:text-3xl xl:text-4xl font-medium text-[#111827] leading-relaxed mb-6">
-              "The journey inward is the greatest adventure you will ever undertake. It requires courage, patience, and a willingness to let go of everything you think you know about yourself."
+              {philosophy}
             </blockquote>
             <cite className="text-[#6B7280] text-sm not-italic">— Acharya Navneetji</cite>
           </div>

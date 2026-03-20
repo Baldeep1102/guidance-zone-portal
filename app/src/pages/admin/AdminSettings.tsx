@@ -16,6 +16,7 @@ export function AdminSettings() {
   const [uploading, setUploading] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const heroImageInputRef = useRef<HTMLInputElement>(null);
+  const aboutImageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (settings) {
@@ -44,6 +45,21 @@ export function AdminSettings() {
       setFormData({ ...formData, logoUrl: res.data.url });
     } catch (err) {
       console.error('Logo upload failed:', err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleAboutImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await adminApi.uploadFile(file);
+      const current = (formData.aboutContent || {}) as Record<string, any>;
+      setFormData({ ...formData, aboutContent: { ...current, image: res.data.url } });
+    } catch (err) {
+      console.error('About image upload failed:', err);
     } finally {
       setUploading(false);
     }
@@ -351,6 +367,34 @@ export function AdminSettings() {
           {activeTab === 'about' && (
             <div className="space-y-6">
               <h2 className="font-heading text-lg font-semibold text-[#111827]">About Page Content</h2>
+              <div>
+                <label className="text-sm text-[#374151] mb-2 block">About Photo</label>
+                {about.image && (
+                  <div className="mb-3">
+                    <img src={about.image} alt="About" className="h-24 w-auto rounded-xl border border-[#E5E7EB] object-cover" />
+                  </div>
+                )}
+                <div className="flex gap-3 items-center flex-wrap">
+                  <input ref={aboutImageInputRef} type="file" accept="image/*" className="hidden" onChange={handleAboutImageUpload} />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => aboutImageInputRef.current?.click()}
+                    disabled={uploading}
+                    className="rounded-xl border-[#E5E7EB] text-sm"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {uploading ? 'Uploading...' : 'Upload Photo'}
+                  </Button>
+                  <span className="text-xs text-[#9CA3AF]">or paste URL:</span>
+                  <Input
+                    value={about.image || ''}
+                    onChange={(e) => setFormData({ ...formData, aboutContent: { ...about, image: e.target.value } })}
+                    className="rounded-xl border-[#E5E7EB] flex-1 max-w-xs"
+                    placeholder="https://... or /uploads/photo.jpg"
+                  />
+                </div>
+              </div>
               <div>
                 <label className="text-sm text-[#374151] mb-1 block">Biography</label>
                 <textarea

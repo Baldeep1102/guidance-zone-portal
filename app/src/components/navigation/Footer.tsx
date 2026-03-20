@@ -1,8 +1,20 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Youtube, Instagram, Music } from 'lucide-react';
+import client from '@/api/client';
+import type { SiteSettings } from '@/types';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const [socialLinks, setSocialLinks] = useState<Record<string, string>>({});
+  const [footerContent, setFooterContent] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    client.get<SiteSettings>('/settings').then((res) => {
+      setSocialLinks((res.data.socialLinks || {}) as Record<string, string>);
+      setFooterContent((res.data.footerContent || {}) as Record<string, string>);
+    }).catch(() => {});
+  }, []);
 
   const footerLinks = {
     explore: [
@@ -26,11 +38,11 @@ export function Footer() {
     ],
   };
 
-  const socialLinks = [
-    { icon: Youtube, href: '#', label: 'YouTube' },
-    { icon: Instagram, href: '#', label: 'Instagram' },
-    { icon: Music, href: '#', label: 'Spotify' },
-    { icon: Mail, href: 'mailto:hello@guzo.org', label: 'Email' },
+  const socialItems = [
+    { icon: Youtube, href: socialLinks.youtube || '#', label: 'YouTube' },
+    { icon: Instagram, href: socialLinks.instagram || '#', label: 'Instagram' },
+    { icon: Music, href: socialLinks.spotify || '#', label: 'Spotify' },
+    { icon: Mail, href: socialLinks.email ? `mailto:${socialLinks.email}` : 'mailto:hello@guzo.org', label: 'Email' },
   ];
 
   return (
@@ -52,10 +64,10 @@ export function Footer() {
                 </span>
               </Link>
               <p className="text-[#6B7280] text-sm leading-relaxed mb-6">
-                Practical spirituality for real life. Guided courses, live satsang, and a community walking the path together.
+                {footerContent.tagline || 'Practical spirituality for real life. Guided courses, live satsang, and a community walking the path together.'}
               </p>
               <div className="flex gap-3">
-                {socialLinks.map((social) => (
+                {socialItems.map((social) => (
                   <a
                     key={social.label}
                     href={social.href}
@@ -139,7 +151,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-6 border-t border-[#E5E7EB]">
           <p className="text-[#9CA3AF] text-sm">
-            {currentYear} GuZo - Guidance Zone. All rights reserved.
+            {footerContent.copyright || `${currentYear} GuZo - Guidance Zone. All rights reserved.`}
           </p>
           <div className="flex items-center gap-6">
             <Link to="#" className="text-[#9CA3AF] text-sm hover:text-[#7B6CFF] transition-colors">
