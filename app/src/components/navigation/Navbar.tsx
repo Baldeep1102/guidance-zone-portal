@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import client from '@/api/client';
+import type { SiteSettings } from '@/types';
 
 interface NavbarProps {
   isAdmin?: boolean;
@@ -11,9 +13,16 @@ interface NavbarProps {
 export function Navbar({ isAdmin = false }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    client.get<SiteSettings>('/settings').then((res) => {
+      if (res.data.logoUrl) setLogoUrl(res.data.logoUrl);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,7 +75,7 @@ export function Navbar({ isAdmin = false }: NavbarProps) {
             {/* Logo */}
             <Link to={isAdmin ? '/admin' : '/'} className="flex items-center gap-3">
               <img
-                src="/logo.png"
+                src={logoUrl || '/logo.png'}
                 alt="GuZo"
                 className="w-10 h-10 object-contain"
               />

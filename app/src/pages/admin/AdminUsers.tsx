@@ -11,17 +11,19 @@ export function AdminUsers() {
   const { data: users, loading } = useApi<User[]>(() => client.get('/users'), []);
   const [searchQuery, setSearchQuery] = useState('');
   const [resending, setResending] = useState<string | null>(null);
-  const [resendSuccess, setResendSuccess] = useState<string | null>(null);
+  const [resendResult, setResendResult] = useState<{ id: string; ok: boolean; msg: string } | null>(null);
 
   const handleResendVerification = async (userId: string) => {
     setResending(userId);
-    setResendSuccess(null);
+    setResendResult(null);
     try {
-      await adminApi.resendVerificationForUser(userId);
-      setResendSuccess(userId);
-      setTimeout(() => setResendSuccess(null), 3000);
-    } catch (err) {
-      console.error('Resend failed:', err);
+      const res = await adminApi.resendVerificationForUser(userId);
+      setResendResult({ id: userId, ok: true, msg: (res.data as any).message || 'Sent!' });
+      setTimeout(() => setResendResult(null), 4000);
+    } catch (err: any) {
+      const msg = err.response?.data?.error || 'Failed to send';
+      setResendResult({ id: userId, ok: false, msg });
+      setTimeout(() => setResendResult(null), 6000);
     } finally {
       setResending(null);
     }
@@ -125,16 +127,23 @@ export function AdminUsers() {
                     </td>
                     <td className="py-4 px-6">
                       {!user.emailVerified && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleResendVerification(user.id)}
-                          disabled={resending === user.id}
-                          className="rounded-full text-xs border-[#E5E7EB] px-3 h-7"
-                        >
-                          <Send className="w-3 h-3 mr-1" />
-                          {resending === user.id ? '...' : resendSuccess === user.id ? 'Sent!' : 'Resend Verification'}
-                        </Button>
+                        <div className="flex flex-col gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleResendVerification(user.id)}
+                            disabled={resending === user.id}
+                            className="rounded-full text-xs border-[#E5E7EB] px-3 h-7"
+                          >
+                            <Send className="w-3 h-3 mr-1" />
+                            {resending === user.id ? '...' : 'Resend Verification'}
+                          </Button>
+                          {resendResult?.id === user.id && (
+                            <span className={`text-xs ${resendResult.ok ? 'text-green-600' : 'text-red-500'}`}>
+                              {resendResult.msg}
+                            </span>
+                          )}
+                        </div>
                       )}
                     </td>
                   </tr>

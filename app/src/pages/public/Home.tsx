@@ -37,6 +37,8 @@ export function Home() {
   const heroContent = settings?.heroContent;
   const ctaContent = settings?.ctaContent;
   const satsang = settings?.satsangSchedule as Record<string, string> | undefined;
+  const heroImages = settings?.heroImages as string[] | undefined;
+  const heroPortrait = heroImages?.[0] || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80';
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -129,7 +131,7 @@ export function Home() {
           {/* Portrait Card */}
           <div className="hero-portrait absolute left-[6vw] top-[14vh] w-[40vw] h-[72vh] rounded-[28px] overflow-hidden card-shadow-light hidden lg:block">
             <img
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80"
+              src={heroPortrait}
               alt="Acharya Navneetji"
               className="w-full h-full object-cover"
             />
@@ -138,7 +140,7 @@ export function Home() {
           {/* Mobile Portrait */}
           <div className="hero-portrait lg:hidden absolute left-1/2 -translate-x-1/2 top-[12vh] w-[70vw] h-[35vh] rounded-[28px] overflow-hidden card-shadow-light">
             <img
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80"
+              src={heroPortrait}
               alt="Acharya Navneetji"
               className="w-full h-full object-cover"
             />

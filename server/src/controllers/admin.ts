@@ -103,11 +103,15 @@ export async function resendVerificationForUser(req: Request, res: Response) {
       data: { emailVerifyToken },
     });
 
-    sendVerificationEmail(user.email, user.name, emailVerifyToken).catch(err =>
-      console.error('Failed to send verification email:', err)
-    );
-
-    res.json({ message: 'Verification email sent' });
+    try {
+      await sendVerificationEmail(user.email, user.name, emailVerifyToken);
+      res.json({ message: `Verification email sent to ${user.email}` });
+    } catch (emailErr: any) {
+      console.error('Email send failed:', emailErr);
+      res.status(500).json({
+        error: `Token saved but email failed to send: ${emailErr?.message || 'Unknown email error'}`,
+      });
+    }
   } catch (err) {
     console.error('Resend verification for user error:', err);
     res.status(500).json({ error: 'Failed to send verification email' });
