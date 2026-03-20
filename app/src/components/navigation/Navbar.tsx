@@ -79,9 +79,11 @@ export function Navbar({ isAdmin = false }: NavbarProps) {
                 alt="GuZo"
                 className="w-10 h-10 object-contain"
               />
-              <span className="font-heading text-xl font-semibold text-[#111827]">
-                GuZo
-              </span>
+              {!logoUrl && (
+                <span className="font-heading text-xl font-semibold text-[#111827]">
+                  GuZo
+                </span>
+              )}
             </Link>
 
             {/* Desktop Navigation */}

@@ -183,7 +183,7 @@ export function AdminSettings() {
                     <Upload className="w-4 h-4 mr-2" />
                     {uploading ? 'Uploading...' : 'Upload Logo'}
                   </Button>
-                  <span className="text-xs text-[#9CA3AF]">or paste URL:</span>
+                  <span className="text-xs text-[#9CA3AF]">Recommended: 200×200px, PNG with transparent background. or paste URL:</span>
                   <Input
                     value={formData.logoUrl || ''}
                     onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
@@ -289,7 +289,7 @@ export function AdminSettings() {
 
               <div className="border-t border-[#F3F4F6] pt-6 space-y-4">
                 <h3 className="text-sm font-medium text-[#374151]">Banner Images</h3>
-                <p className="text-xs text-[#9CA3AF]">Images shown in the hero section. Upload up to 5.</p>
+                <p className="text-xs text-[#9CA3AF]">Images shown in the hero section. Upload up to 5. Recommended: 800×1000px portrait, JPG/PNG.</p>
                 <div className="flex flex-wrap gap-3">
                   {heroImages.map((url) => (
                     <div key={url} className="relative w-28 h-20 rounded-xl overflow-hidden border border-[#E5E7EB]">
@@ -386,7 +386,7 @@ export function AdminSettings() {
                     <Upload className="w-4 h-4 mr-2" />
                     {uploading ? 'Uploading...' : 'Upload Photo'}
                   </Button>
-                  <span className="text-xs text-[#9CA3AF]">or paste URL:</span>
+                  <span className="text-xs text-[#9CA3AF]">Recommended: 800×1000px portrait, JPG. or paste URL:</span>
                   <Input
                     value={about.image || ''}
                     onChange={(e) => setFormData({ ...formData, aboutContent: { ...about, image: e.target.value } })}
