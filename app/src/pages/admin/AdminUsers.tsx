@@ -1,13 +1,31 @@
 import { useState } from 'react';
-import { Search, Users, Mail, Phone, Shield, Calendar } from 'lucide-react';
+import { Search, Users, Mail, Phone, Shield, Calendar, Send } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useApi } from '@/hooks/useApi';
 import type { User } from '@/types';
 import client from '@/api/client';
+import { adminApi } from '@/api/admin';
 
 export function AdminUsers() {
   const { data: users, loading } = useApi<User[]>(() => client.get('/users'), []);
   const [searchQuery, setSearchQuery] = useState('');
+  const [resending, setResending] = useState<string | null>(null);
+  const [resendSuccess, setResendSuccess] = useState<string | null>(null);
+
+  const handleResendVerification = async (userId: string) => {
+    setResending(userId);
+    setResendSuccess(null);
+    try {
+      await adminApi.resendVerificationForUser(userId);
+      setResendSuccess(userId);
+      setTimeout(() => setResendSuccess(null), 3000);
+    } catch (err) {
+      console.error('Resend failed:', err);
+    } finally {
+      setResending(null);
+    }
+  };
 
   const filtered = (users || []).filter(u =>
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -59,6 +77,7 @@ export function AdminUsers() {
                   <th className="text-left py-4 px-6 text-sm font-medium text-[#6B7280]">Status</th>
                   <th className="text-left py-4 px-6 text-sm font-medium text-[#6B7280]">Courses</th>
                   <th className="text-left py-4 px-6 text-sm font-medium text-[#6B7280]">Joined</th>
+                  <th className="text-left py-4 px-6 text-sm font-medium text-[#6B7280]">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -103,6 +122,20 @@ export function AdminUsers() {
                         <Calendar className="w-3 h-3" />
                         {new Date(user.createdAt).toLocaleDateString()}
                       </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      {!user.emailVerified && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleResendVerification(user.id)}
+                          disabled={resending === user.id}
+                          className="rounded-full text-xs border-[#E5E7EB] px-3 h-7"
+                        >
+                          <Send className="w-3 h-3 mr-1" />
+                          {resending === user.id ? '...' : resendSuccess === user.id ? 'Sent!' : 'Resend Verification'}
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -38,4 +38,7 @@ export const authApi = {
 
   me: () =>
     client.get<{ user: AuthUser }>('/auth/me'),
+
+  resendVerification: (email: string) =>
+    client.post<{ message: string }>('/auth/resend-verification', { email }),
 };

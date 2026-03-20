@@ -5,6 +5,8 @@ import { Navbar } from '@/components/navigation/Navbar';
 import { Footer } from '@/components/navigation/Footer';
 import { ProtectedRoute } from '@/components/guards/ProtectedRoute';
 import { AdminRoute } from '@/components/guards/AdminRoute';
+import client from '@/api/client';
+import type { SiteSettings } from '@/types';
 
 // Public Pages
 import { Home } from '@/pages/public/Home';
@@ -18,6 +20,8 @@ import { Projects } from '@/pages/public/Projects';
 import { Login } from '@/pages/public/Login';
 import { Signup } from '@/pages/public/Signup';
 import { VerifyEmail } from '@/pages/public/VerifyEmail';
+import { ForgotPassword } from '@/pages/public/ForgotPassword';
+import { ResetPassword } from '@/pages/public/ResetPassword';
 
 // Admin Pages
 import { AdminLogin } from '@/pages/admin/AdminLogin';
@@ -30,6 +34,25 @@ import { AdminDownloads } from '@/pages/admin/AdminDownloads';
 import { AdminProjects } from '@/pages/admin/AdminProjects';
 import { AdminUsers } from '@/pages/admin/AdminUsers';
 import { AdminSettings } from '@/pages/admin/AdminSettings';
+
+// Inject color scheme CSS variables from site settings
+function CssVariableInjector() {
+  useEffect(() => {
+    client.get<SiteSettings>('/settings').then((res) => {
+      const scheme = res.data.colorScheme;
+      if (!scheme) return;
+      const root = document.documentElement;
+      if (scheme.accent) root.style.setProperty('--guzo-accent', scheme.accent);
+      if (scheme.bgLight) root.style.setProperty('--guzo-bg-light', scheme.bgLight);
+      if (scheme.bgDark) root.style.setProperty('--guzo-bg-dark', scheme.bgDark);
+      if (scheme.textPrimary) root.style.setProperty('--guzo-text-primary', scheme.textPrimary);
+      if (scheme.textSecondary) root.style.setProperty('--guzo-text-secondary', scheme.textSecondary);
+    }).catch(() => {
+      // silently fail — defaults from CSS will apply
+    });
+  }, []);
+  return null;
+}
 
 // Scroll to top on route change
 function ScrollToTop() {
@@ -67,6 +90,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <CssVariableInjector />
         <ScrollToTop />
         <Routes>
           {/* Public Routes */}
@@ -82,6 +106,8 @@ function App() {
           <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
           <Route path="/signup" element={<PublicLayout><Signup /></PublicLayout>} />
           <Route path="/verify-email" element={<PublicLayout><VerifyEmail /></PublicLayout>} />
+          <Route path="/forgot-password" element={<PublicLayout><ForgotPassword /></PublicLayout>} />
+          <Route path="/reset-password" element={<PublicLayout><ResetPassword /></PublicLayout>} />
 
           {/* Protected User Routes */}
           <Route

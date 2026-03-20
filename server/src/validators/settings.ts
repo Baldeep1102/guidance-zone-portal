@@ -9,4 +9,8 @@ export const updateSettingsSchema = z.object({
   socialLinks: z.any().optional(),
   satsangSchedule: z.any().optional(),
   announcementBanner: z.string().optional().nullable(),
+  colorScheme: z.any().optional(),
+  heroContent: z.any().optional(),
+  ctaContent: z.any().optional(),
+  footerContent: z.any().optional(),
 });

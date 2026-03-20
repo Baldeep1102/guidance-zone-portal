@@ -298,6 +298,46 @@ export async function resetPassword(req: Request, res: Response) {
   }
 }
 
+export async function resendVerification(req: Request, res: Response) {
+  try {
+    const { email } = req.body;
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    // Always return success to prevent email enumeration
+    if (!user) {
+      res.json({ message: 'If an account exists, a verification email has been sent.' });
+      return;
+    }
+
+    if (user.emailVerified) {
+      res.status(400).json({ error: 'This email is already verified.' });
+      return;
+    }
+
+    // Rate limit: only resend if last updated > 2 min ago
+    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+    if (user.updatedAt > twoMinutesAgo) {
+      res.status(429).json({ error: 'Please wait 2 minutes before requesting another email.' });
+      return;
+    }
+
+    const emailVerifyToken = crypto.randomBytes(32).toString('hex');
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerifyToken },
+    });
+
+    sendVerificationEmail(email, user.name, emailVerifyToken).catch(err =>
+      console.error('Failed to resend verification email:', err)
+    );
+
+    res.json({ message: 'If an account exists, a verification email has been sent.' });
+  } catch (err) {
+    console.error('Resend verification error:', err);
+    res.status(500).json({ error: 'Failed to resend verification email' });
+  }
+}
+
 export async function me(req: AuthRequest, res: Response) {
   try {
     if (!req.user) {

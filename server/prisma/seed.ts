@@ -379,6 +379,27 @@ async function main() {
           countriesReached: 15,
         },
       },
+      colorScheme: {
+        accent: '#7B6CFF',
+        bgLight: '#F6F7F9',
+        bgDark: '#101422',
+        textPrimary: '#111827',
+        textSecondary: '#6B7280',
+      },
+      heroContent: {
+        headline: 'A space for seekers.',
+        subheadline: 'Guided courses, live satsang, and a community walking the path—practically, together.',
+        ctaPrimary: 'Explore Courses',
+        ctaSecondary: 'Join Satsang',
+      },
+      ctaContent: {
+        headline: 'Be part of the orbit.',
+        subheadline: 'Get weekly notes, new course alerts, and satsang reminders.',
+      },
+      footerContent: {
+        tagline: 'A space for seekers.',
+        copyright: '© 2026 Guidance Zone. All rights reserved.',
+      },
     },
   });
   console.log('Site settings created');

@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { env } from './config/env.js';
 import { errorHandler } from './middleware/error.js';
+import { uploadsDir } from './middleware/upload.js';
 
 import authRoutes from './routes/auth.js';
 import coursesRoutes from './routes/courses.js';
@@ -16,6 +17,7 @@ import registrationsRoutes from './routes/registrations.js';
 import usersRoutes from './routes/users.js';
 import adminRoutes from './routes/admin.js';
 import calendarRoutes from './routes/calendar.js';
+import prisma from './config/database.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -28,6 +30,9 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
+// Serve uploaded files
+app.use('/uploads', express.static(uploadsDir));
+
 // API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/courses', coursesRoutes);
@@ -39,6 +44,20 @@ app.use('/api/v1/registrations', registrationsRoutes);
 app.use('/api/v1/users', usersRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/calendar', calendarRoutes);
+
+// Public settings endpoint (for CSS variables, hero content, etc.)
+app.get('/api/v1/settings', async (_req, res) => {
+  try {
+    let settings = await prisma.siteSettings.findUnique({ where: { id: 'singleton' } });
+    if (!settings) {
+      settings = await prisma.siteSettings.create({ data: { id: 'singleton' } });
+    }
+    res.json(settings);
+  } catch (err) {
+    console.error('Public settings error:', err);
+    res.status(500).json({ error: 'Failed to fetch settings' });
+  }
+});
 
 // Health check
 app.get('/api/health', (_req, res) => {

@@ -12,7 +12,8 @@ import { useApi } from '@/hooks/useApi';
 import { talksApi } from '@/api/talks';
 import { booksApi } from '@/api/books';
 import { coursesApi } from '@/api/courses';
-import type { Talk, Book, Course } from '@/types';
+import client from '@/api/client';
+import type { Talk, Book, Course, SiteSettings } from '@/types';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -27,318 +28,90 @@ export function Home() {
   const { data: talks } = useApi<Talk[]>(talksApi.getAll);
   const { data: books } = useApi<Book[]>(booksApi.getAll);
   const { data: coursesData } = useApi<Course[]>(coursesApi.getAll);
+  const { data: settings } = useApi<SiteSettings>(() => client.get('/settings'));
 
   const featuredTalks = (talks || []).filter(t => t.featured).slice(0, 3);
   const featuredBooks = (books || []).filter(b => b.featured).slice(0, 3);
   const upcomingCourses = (coursesData || []).filter(c => c.isActive).slice(0, 3);
 
+  const heroContent = settings?.heroContent;
+  const ctaContent = settings?.ctaContent;
+  const satsang = settings?.satsangSchedule as Record<string, string> | undefined;
+
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Hero Section Animations
+      // Hero Section — initial entrance animation (keep)
       const heroTl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-
       heroTl
-        .from('.hero-portrait', {
-          opacity: 0,
-          x: '-10vw',
-          scale: 0.98,
-          duration: 1,
-        })
-        .from('.hero-headline', {
-          opacity: 0,
-          y: 24,
-          duration: 0.8,
-        }, '-=0.6')
-        .from('.hero-paragraph', {
-          opacity: 0,
-          y: 18,
-          duration: 0.8,
-        }, '-=0.5')
-        .from('.hero-cta', {
-          opacity: 0,
-          y: 14,
-          duration: 0.6,
-        }, '-=0.4')
-        .from('.hero-label', {
-          opacity: 0,
-          y: -10,
-          duration: 0.6,
-        }, '-=0.8');
+        .from('.hero-portrait', { opacity: 0, x: '-10vw', scale: 0.98, duration: 1 })
+        .from('.hero-headline', { opacity: 0, y: 24, duration: 0.8 }, '-=0.6')
+        .from('.hero-paragraph', { opacity: 0, y: 18, duration: 0.8 }, '-=0.5')
+        .from('.hero-cta', { opacity: 0, y: 14, duration: 0.6 }, '-=0.4')
+        .from('.hero-label', { opacity: 0, y: -10, duration: 0.6 }, '-=0.8');
 
-      // Hero Scroll Exit Animation
-      ScrollTrigger.create({
-        trigger: heroRef.current,
-        start: 'top top',
-        end: '+=130%',
-        pin: true,
-        scrub: 0.6,
-        onUpdate: (self) => {
-          const progress = self.progress;
-          if (progress > 0.7) {
-            const exitProgress = (progress - 0.7) / 0.3;
-            gsap.set('.hero-portrait', {
-              x: -18 * exitProgress + 'vw',
-              opacity: 1 - exitProgress * 0.75,
-              scale: 1 - exitProgress * 0.02,
-            });
-            gsap.set('.hero-text-block', {
-              x: 12 * exitProgress + 'vw',
-              opacity: 1 - exitProgress * 0.8,
-            });
-          }
-        },
+      // Title Card — fade in on scroll
+      gsap.from(['.title-card', '.orbit-icon', '.title-headline', '.title-subheadline', '.title-cta'], {
+        scrollTrigger: { trigger: titleCardRef.current, start: 'top 80%' },
+        opacity: 0,
+        y: 20,
+        duration: 0.5,
+        ease: 'power2.out',
+        stagger: 0.08,
       });
 
-      // Title Card Section
-      ScrollTrigger.create({
-        trigger: titleCardRef.current,
-        start: 'top top',
-        end: '+=130%',
-        pin: true,
-        scrub: 0.6,
-        onUpdate: (self) => {
-          const progress = self.progress;
-          const card = titleCardRef.current?.querySelector('.title-card');
-          const orbit = titleCardRef.current?.querySelector('.orbit-icon');
-          const headline = titleCardRef.current?.querySelector('.title-headline');
-          const subheadline = titleCardRef.current?.querySelector('.title-subheadline');
-          const cta = titleCardRef.current?.querySelector('.title-cta');
-
-          if (progress <= 0.3) {
-            const entranceProgress = progress / 0.3;
-            if (card) gsap.set(card, {
-              y: 100 * (1 - entranceProgress) + 'vh',
-              scale: 0.92 + entranceProgress * 0.08,
-              opacity: entranceProgress,
-            });
-            if (orbit) gsap.set(orbit, {
-              y: -12 * (1 - entranceProgress) + 'vh',
-              opacity: entranceProgress,
-              rotate: -10 * (1 - entranceProgress),
-            });
-            if (headline) gsap.set(headline, {
-              y: 40 * (1 - entranceProgress),
-              opacity: entranceProgress,
-            });
-            if (subheadline) gsap.set(subheadline, {
-              y: 18 * (1 - entranceProgress),
-              opacity: entranceProgress,
-            });
-            if (cta) gsap.set(cta, {
-              y: 14 * (1 - entranceProgress),
-              opacity: entranceProgress,
-            });
-          } else if (progress <= 0.7) {
-            if (card) gsap.set(card, { y: 0, scale: 1, opacity: 1 });
-            if (orbit) gsap.set(orbit, { y: 0, opacity: 1, rotate: 0 });
-            if (headline) gsap.set(headline, { y: 0, opacity: 1 });
-            if (subheadline) gsap.set(subheadline, { y: 0, opacity: 1 });
-            if (cta) gsap.set(cta, { y: 0, opacity: 1 });
-          } else {
-            const exitProgress = (progress - 0.7) / 0.3;
-            if (card) gsap.set(card, {
-              y: -70 * exitProgress + 'vh',
-              scale: 1 - exitProgress * 0.04,
-              opacity: 1 - exitProgress * 0.75,
-            });
-            if (orbit) gsap.set(orbit, {
-              y: -10 * exitProgress + 'vh',
-              opacity: 1 - exitProgress * 0.8,
-            });
-            if (headline) gsap.set(headline, {
-              y: -24 * exitProgress,
-              opacity: 1 - exitProgress * 0.75,
-            });
-          }
-        },
-      });
-
-      // Featured Section (Flowing)
+      // Featured Section — fade in on scroll
       gsap.from('.featured-header', {
-        scrollTrigger: {
-          trigger: featuredRef.current,
-          start: 'top 80%',
-          end: 'top 55%',
-          scrub: 0.4,
-        },
-        x: '-6vw',
+        scrollTrigger: { trigger: featuredRef.current, start: 'top 80%' },
         opacity: 0,
+        y: 20,
+        duration: 0.5,
+        ease: 'power2.out',
       });
-
-      gsap.from('.featured-video', {
-        scrollTrigger: {
-          trigger: featuredRef.current,
-          start: 'top 75%',
-          end: 'top 50%',
-          scrub: 0.4,
-        },
-        x: '-10vw',
+      gsap.from(['.featured-video', '.featured-article'], {
+        scrollTrigger: { trigger: featuredRef.current, start: 'top 70%' },
         opacity: 0,
-        scale: 0.98,
+        y: 20,
+        duration: 0.5,
+        ease: 'power2.out',
+        stagger: 0.08,
       });
 
-      gsap.from('.featured-article', {
-        scrollTrigger: {
-          trigger: featuredRef.current,
-          start: 'top 70%',
-          end: 'top 45%',
-          scrub: 0.4,
-        },
-        x: '10vw',
+      // Satsang Section — fade in on scroll
+      gsap.from(['.satsang-left', '.satsang-right'], {
+        scrollTrigger: { trigger: satsangRef.current, start: 'top 80%' },
         opacity: 0,
-        rotateZ: 1.5,
-        stagger: 0.12,
+        y: 20,
+        duration: 0.5,
+        ease: 'power2.out',
+        stagger: 0.08,
       });
 
-      // Satsang Section
-      ScrollTrigger.create({
-        trigger: satsangRef.current,
-        start: 'top top',
-        end: '+=130%',
-        pin: true,
-        scrub: 0.6,
-        onUpdate: (self) => {
-          const progress = self.progress;
-          const leftCard = satsangRef.current?.querySelector('.satsang-left');
-          const rightCard = satsangRef.current?.querySelector('.satsang-right');
-          const content = satsangRef.current?.querySelector('.satsang-content');
-          const planet = satsangRef.current?.querySelector('.satsang-planet');
-
-          if (progress <= 0.3) {
-            const entranceProgress = progress / 0.3;
-            if (leftCard) gsap.set(leftCard, {
-              x: -60 * (1 - entranceProgress) + 'vw',
-              opacity: entranceProgress,
-            });
-            if (rightCard) gsap.set(rightCard, {
-              x: 60 * (1 - entranceProgress) + 'vw',
-              opacity: entranceProgress,
-            });
-            if (content) gsap.set(content, {
-              y: 24 * (1 - entranceProgress),
-              opacity: entranceProgress,
-            });
-            if (planet) gsap.set(planet, {
-              scale: 0.6 + entranceProgress * 0.4,
-              opacity: entranceProgress,
-            });
-          } else if (progress <= 0.7) {
-            if (leftCard) gsap.set(leftCard, { x: 0, opacity: 1 });
-            if (rightCard) gsap.set(rightCard, { x: 0, opacity: 1 });
-            if (content) gsap.set(content, { y: 0, opacity: 1 });
-            if (planet) gsap.set(planet, { scale: 1, opacity: 1 });
-          } else {
-            const exitProgress = (progress - 0.7) / 0.3;
-            if (leftCard) gsap.set(leftCard, {
-              x: -18 * exitProgress + 'vw',
-              opacity: 1 - exitProgress * 0.75,
-            });
-            if (rightCard) gsap.set(rightCard, {
-              x: 18 * exitProgress + 'vw',
-              opacity: 1 - exitProgress * 0.75,
-            });
-            if (content) gsap.set(content, {
-              y: -12 * exitProgress,
-              opacity: 1 - exitProgress * 0.75,
-            });
-          }
-        },
+      // Courses Section — fade in on scroll
+      gsap.from(['.courses-left', '.courses-right'], {
+        scrollTrigger: { trigger: coursesRef.current, start: 'top 80%' },
+        opacity: 0,
+        y: 20,
+        duration: 0.5,
+        ease: 'power2.out',
+        stagger: 0.08,
+      });
+      gsap.from('.courses-list-item', {
+        scrollTrigger: { trigger: coursesRef.current, start: 'top 75%' },
+        opacity: 0,
+        y: 16,
+        duration: 0.4,
+        ease: 'power2.out',
+        stagger: 0.06,
       });
 
-      // Courses Section
-      ScrollTrigger.create({
-        trigger: coursesRef.current,
-        start: 'top top',
-        end: '+=130%',
-        pin: true,
-        scrub: 0.6,
-        onUpdate: (self) => {
-          const progress = self.progress;
-          const leftCard = coursesRef.current?.querySelector('.courses-left');
-          const rightCard = coursesRef.current?.querySelector('.courses-right');
-          const list = coursesRef.current?.querySelectorAll('.courses-list-item');
-          const star = coursesRef.current?.querySelector('.courses-star');
-
-          if (progress <= 0.3) {
-            const entranceProgress = progress / 0.3;
-            if (leftCard) gsap.set(leftCard, {
-              x: -60 * (1 - entranceProgress) + 'vw',
-              opacity: entranceProgress,
-            });
-            if (rightCard) gsap.set(rightCard, {
-              x: 60 * (1 - entranceProgress) + 'vw',
-              opacity: entranceProgress,
-            });
-            if (star) gsap.set(star, {
-              scale: 0.6 + entranceProgress * 0.4,
-              opacity: entranceProgress,
-            });
-            list?.forEach((item, i) => {
-              gsap.set(item, {
-                y: 16 * (1 - entranceProgress),
-                opacity: entranceProgress,
-                delay: i * 0.06,
-              });
-            });
-          } else if (progress <= 0.7) {
-            if (leftCard) gsap.set(leftCard, { x: 0, opacity: 1 });
-            if (rightCard) gsap.set(rightCard, { x: 0, opacity: 1 });
-            if (star) gsap.set(star, { scale: 1, opacity: 1 });
-            list?.forEach((item) => gsap.set(item, { y: 0, opacity: 1 }));
-          } else {
-            const exitProgress = (progress - 0.7) / 0.3;
-            if (leftCard) gsap.set(leftCard, {
-              x: -18 * exitProgress + 'vw',
-              opacity: 1 - exitProgress * 0.75,
-            });
-            if (rightCard) gsap.set(rightCard, {
-              x: 18 * exitProgress + 'vw',
-              opacity: 1 - exitProgress * 0.75,
-            });
-          }
-        },
-      });
-
-      // CTA Section
-      ScrollTrigger.create({
-        trigger: ctaRef.current,
-        start: 'top top',
-        end: '+=120%',
-        pin: true,
-        scrub: 0.6,
-        onUpdate: (self) => {
-          const progress = self.progress;
-          const card = ctaRef.current?.querySelector('.cta-card');
-          const headline = ctaRef.current?.querySelector('.cta-headline');
-          const form = ctaRef.current?.querySelector('.cta-form');
-
-          if (progress <= 0.3) {
-            const entranceProgress = progress / 0.3;
-            if (card) gsap.set(card, {
-              y: 100 * (1 - entranceProgress) + 'vh',
-              scale: 0.92 + entranceProgress * 0.08,
-              opacity: entranceProgress,
-            });
-            if (headline) gsap.set(headline, {
-              y: 24 * (1 - entranceProgress),
-              opacity: entranceProgress,
-            });
-            if (form) gsap.set(form, {
-              y: 16 * (1 - entranceProgress),
-              opacity: entranceProgress,
-            });
-          } else if (progress <= 0.7) {
-            if (card) gsap.set(card, { y: 0, scale: 1, opacity: 1 });
-            if (headline) gsap.set(headline, { y: 0, opacity: 1 });
-            if (form) gsap.set(form, { y: 0, opacity: 1 });
-          } else {
-            const exitProgress = (progress - 0.7) / 0.3;
-            if (card) gsap.set(card, {
-              y: -40 * exitProgress + 'vh',
-              opacity: 1 - exitProgress * 0.65,
-            });
-          }
-        },
+      // CTA Section — fade in on scroll
+      gsap.from(['.cta-card', '.cta-headline', '.cta-form'], {
+        scrollTrigger: { trigger: ctaRef.current, start: 'top 80%' },
+        opacity: 0,
+        y: 20,
+        duration: 0.5,
+        ease: 'power2.out',
+        stagger: 0.08,
       });
     });
 
@@ -377,15 +150,15 @@ export function Home() {
               Welcome to GuZo
             </span>
             <h1 className="hero-headline font-heading text-4xl lg:text-6xl xl:text-7xl font-semibold text-[#111827] leading-[0.95] tracking-[-0.02em] mb-6">
-              A space for<br />seekers.
+              {heroContent?.headline || 'A space for seekers.'}
             </h1>
             <p className="hero-paragraph text-base lg:text-lg text-[#6B7280] leading-relaxed mb-8 max-w-md">
-              Guided courses, live satsang, and a community walking the path—practically, together.
+              {heroContent?.subheadline || 'Guided courses, live satsang, and a community walking the path—practically, together.'}
             </p>
             <div className="hero-cta flex flex-wrap gap-4">
               <Link to="/courses">
                 <Button className="bg-[#7B6CFF] hover:bg-[#6B5CFF] text-white rounded-full px-6 py-5 text-sm font-medium">
-                  Explore Courses
+                  {heroContent?.ctaPrimary || 'Explore Courses'}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
@@ -394,7 +167,7 @@ export function Home() {
                   variant="outline"
                   className="border-[#E5E7EB] text-[#111827] hover:bg-[#F3F4F6] rounded-full px-6 py-5 text-sm font-medium"
                 >
-                  Join Satsang
+                  {heroContent?.ctaSecondary || 'Join Satsang'}
                 </Button>
               </Link>
             </div>
@@ -521,7 +294,7 @@ export function Home() {
             <span className="text-xs font-semibold tracking-[0.18em] uppercase text-[#7B6CFF] mb-4">
               Live Satsang
             </span>
-            <h2 className="satsang-content font-heading text-3xl lg:text-4xl xl:text-5xl font-semibold text-white mb-4 leading-tight">
+            <h2 className="font-heading text-3xl lg:text-4xl xl:text-5xl font-semibold text-white mb-4 leading-tight">
               Join the circle.
             </h2>
             <p className="text-[rgba(255,255,255,0.7)] text-base leading-relaxed mb-6 max-w-md">
@@ -529,7 +302,11 @@ export function Home() {
             </p>
             <div className="flex items-center gap-2 text-[rgba(255,255,255,0.6)] text-sm mb-8">
               <Calendar className="w-4 h-4" />
-              <span>Sunday · 8:00 PM IST · Zoom</span>
+              <span>
+                {satsang
+                  ? `${satsang.day} · ${satsang.time} ${satsang.timezone} · Zoom`
+                  : 'Sunday · 8:00 PM IST · Zoom'}
+              </span>
             </div>
             <div className="flex flex-wrap gap-4">
               <Link to="/talks">
@@ -620,10 +397,10 @@ export function Home() {
               <OrbitIcon size={100} />
             </div>
             <h2 className="cta-headline font-heading text-3xl lg:text-5xl xl:text-6xl font-semibold text-[#111827] mb-4 leading-tight">
-              Be part of the orbit.
+              {ctaContent?.headline || 'Be part of the orbit.'}
             </h2>
             <p className="text-[#6B7280] text-base lg:text-lg mb-8 lg:mb-10 max-w-md">
-              Get weekly notes, new course alerts, and satsang reminders.
+              {ctaContent?.subheadline || 'Get weekly notes, new course alerts, and satsang reminders.'}
             </p>
             <form className="cta-form flex flex-col sm:flex-row gap-3 w-full max-w-md">
               <input

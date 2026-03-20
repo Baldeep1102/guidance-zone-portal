@@ -130,6 +130,31 @@ export interface Registration {
 }
 
 // Site Settings Types
+export interface ColorScheme {
+  accent: string;
+  bgLight: string;
+  bgDark: string;
+  textPrimary: string;
+  textSecondary: string;
+}
+
+export interface HeroContent {
+  headline: string;
+  subheadline: string;
+  ctaPrimary: string;
+  ctaSecondary: string;
+}
+
+export interface CtaContent {
+  headline: string;
+  subheadline: string;
+}
+
+export interface FooterContent {
+  tagline: string;
+  copyright: string;
+}
+
 export interface SiteSettings {
   id: string;
   siteName: string;
@@ -140,6 +165,10 @@ export interface SiteSettings {
   socialLinks?: any;
   satsangSchedule?: any;
   announcementBanner?: string | null;
+  colorScheme?: ColorScheme | null;
+  heroContent?: HeroContent | null;
+  ctaContent?: CtaContent | null;
+  footerContent?: FooterContent | null;
 }
 
 // Navigation Types
