@@ -22,6 +22,7 @@ jobs:
 
             echo "--- Pulling latest code ---"
             cd /var/www/guzo
+            git reset --hard HEAD
             git pull origin main
 
             echo "--- Installing server dependencies ---"
