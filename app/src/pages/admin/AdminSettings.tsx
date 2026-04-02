@@ -365,8 +365,10 @@ export function AdminSettings() {
 
           {/* About */}
           {activeTab === 'about' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               <h2 className="font-heading text-lg font-semibold text-[#111827]">About Page Content</h2>
+
+              {/* Photo */}
               <div>
                 <label className="text-sm text-[#374151] mb-2 block">About Photo</label>
                 {about.image && (
@@ -386,15 +388,11 @@ export function AdminSettings() {
                     <Upload className="w-4 h-4 mr-2" />
                     {uploading ? 'Uploading...' : 'Upload Photo'}
                   </Button>
-                  <span className="text-xs text-[#9CA3AF]">Recommended: 800×1000px portrait, JPG. or paste URL:</span>
-                  <Input
-                    value={about.image || ''}
-                    onChange={(e) => setFormData({ ...formData, aboutContent: { ...about, image: e.target.value } })}
-                    className="rounded-xl border-[#E5E7EB] flex-1 max-w-xs"
-                    placeholder="https://... or /uploads/photo.jpg"
-                  />
+                  <span className="text-xs text-[#9CA3AF]">Recommended: 800x1000px portrait, JPG/PNG (under 500KB for fast load).</span>
                 </div>
               </div>
+
+              {/* Biography */}
               <div>
                 <label className="text-sm text-[#374151] mb-1 block">Biography</label>
                 <textarea
@@ -404,6 +402,8 @@ export function AdminSettings() {
                   rows={5}
                 />
               </div>
+
+              {/* Philosophy Quote */}
               <div>
                 <label className="text-sm text-[#374151] mb-1 block">Philosophy Quote</label>
                 <textarea
@@ -413,21 +413,187 @@ export function AdminSettings() {
                   rows={3}
                 />
               </div>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {['yearsTeaching', 'studentsGuided', 'coursesOffered', 'countriesReached'].map((key) => (
-                  <div key={key}>
-                    <label className="text-sm text-[#374151] mb-1 block capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
-                    <Input
-                      type="number"
-                      value={about.stats?.[key] || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        aboutContent: { ...about, stats: { ...about.stats, [key]: parseInt(e.target.value) || 0 } },
-                      })}
-                      className="rounded-xl border-[#E5E7EB]"
-                    />
-                  </div>
-                ))}
+
+              {/* Stats Cards */}
+              <div className="border-t border-[#F3F4F6] pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-medium text-[#374151]">Stats Cards</h3>
+                  {(about.statCards?.length || 0) < 6 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-lg border-[#E5E7EB] text-xs"
+                      onClick={() => {
+                        const cards = [...(about.statCards || []), { value: '', label: '' }];
+                        setFormData({ ...formData, aboutContent: { ...about, statCards: cards } });
+                      }}
+                    >
+                      + Add Stat
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-[#9CA3AF] mb-3">Each stat has a value (e.g. "15+", "50K+") and a label (e.g. "Years of Teaching").</p>
+                <div className="space-y-3">
+                  {(about.statCards || []).map((card: { value: string; label: string }, i: number) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <Input
+                        value={card.value}
+                        onChange={(e) => {
+                          const cards = [...(about.statCards || [])];
+                          cards[i] = { ...cards[i], value: e.target.value };
+                          setFormData({ ...formData, aboutContent: { ...about, statCards: cards } });
+                        }}
+                        className="rounded-xl border-[#E5E7EB] w-28"
+                        placeholder="15+"
+                      />
+                      <Input
+                        value={card.label}
+                        onChange={(e) => {
+                          const cards = [...(about.statCards || [])];
+                          cards[i] = { ...cards[i], label: e.target.value };
+                          setFormData({ ...formData, aboutContent: { ...about, statCards: cards } });
+                        }}
+                        className="rounded-xl border-[#E5E7EB] flex-1"
+                        placeholder="Years of Teaching"
+                      />
+                      <button
+                        onClick={() => {
+                          const cards = (about.statCards || []).filter((_: any, idx: number) => idx !== i);
+                          setFormData({ ...formData, aboutContent: { ...about, statCards: cards } });
+                        }}
+                        className="text-red-400 hover:text-red-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {(!about.statCards || about.statCards.length === 0) && (
+                    <p className="text-xs text-[#9CA3AF] italic">No stats added yet. Defaults will be shown on the site.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Teaching Philosophy Cards */}
+              <div className="border-t border-[#F3F4F6] pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-medium text-[#374151]">Teaching Philosophy Cards</h3>
+                  {(about.philosophyCards?.length || 0) < 6 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-lg border-[#E5E7EB] text-xs"
+                      onClick={() => {
+                        const cards = [...(about.philosophyCards || []), { title: '', description: '' }];
+                        setFormData({ ...formData, aboutContent: { ...about, philosophyCards: cards } });
+                      }}
+                    >
+                      + Add Card
+                    </Button>
+                  )}
+                </div>
+                <div className="space-y-4">
+                  {(about.philosophyCards || []).map((card: { title: string; description: string }, i: number) => (
+                    <div key={i} className="p-4 rounded-xl border border-[#E5E7EB] bg-[#FAFAFA] space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-[#9CA3AF]">Card {i + 1}</span>
+                        <button
+                          onClick={() => {
+                            const cards = (about.philosophyCards || []).filter((_: any, idx: number) => idx !== i);
+                            setFormData({ ...formData, aboutContent: { ...about, philosophyCards: cards } });
+                          }}
+                          className="text-red-400 hover:text-red-600"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <Input
+                        value={card.title}
+                        onChange={(e) => {
+                          const cards = [...(about.philosophyCards || [])];
+                          cards[i] = { ...cards[i], title: e.target.value };
+                          setFormData({ ...formData, aboutContent: { ...about, philosophyCards: cards } });
+                        }}
+                        className="rounded-xl border-[#E5E7EB]"
+                        placeholder="Title"
+                      />
+                      <textarea
+                        value={card.description}
+                        onChange={(e) => {
+                          const cards = [...(about.philosophyCards || [])];
+                          cards[i] = { ...cards[i], description: e.target.value };
+                          setFormData({ ...formData, aboutContent: { ...about, philosophyCards: cards } });
+                        }}
+                        className="w-full px-4 py-3 rounded-xl border border-[#E5E7EB] text-sm resize-none"
+                        rows={2}
+                        placeholder="Description"
+                      />
+                    </div>
+                  ))}
+                  {(!about.philosophyCards || about.philosophyCards.length === 0) && (
+                    <p className="text-xs text-[#9CA3AF] italic">No philosophy cards added yet. Defaults will be shown on the site.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Journey Timeline */}
+              <div className="border-t border-[#F3F4F6] pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-medium text-[#374151]">Journey Timeline</h3>
+                  {(about.timeline?.length || 0) < 12 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-lg border-[#E5E7EB] text-xs"
+                      onClick={() => {
+                        const items = [...(about.timeline || []), { year: '', event: '' }];
+                        setFormData({ ...formData, aboutContent: { ...about, timeline: items } });
+                      }}
+                    >
+                      + Add Entry
+                    </Button>
+                  )}
+                </div>
+                <div className="space-y-3">
+                  {(about.timeline || []).map((item: { year: string; event: string }, i: number) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <Input
+                        value={item.year}
+                        onChange={(e) => {
+                          const items = [...(about.timeline || [])];
+                          items[i] = { ...items[i], year: e.target.value };
+                          setFormData({ ...formData, aboutContent: { ...about, timeline: items } });
+                        }}
+                        className="rounded-xl border-[#E5E7EB] w-24"
+                        placeholder="2008"
+                      />
+                      <Input
+                        value={item.event}
+                        onChange={(e) => {
+                          const items = [...(about.timeline || [])];
+                          items[i] = { ...items[i], event: e.target.value };
+                          setFormData({ ...formData, aboutContent: { ...about, timeline: items } });
+                        }}
+                        className="rounded-xl border-[#E5E7EB] flex-1"
+                        placeholder="What happened this year"
+                      />
+                      <button
+                        onClick={() => {
+                          const items = (about.timeline || []).filter((_: any, idx: number) => idx !== i);
+                          setFormData({ ...formData, aboutContent: { ...about, timeline: items } });
+                        }}
+                        className="text-red-400 hover:text-red-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {(!about.timeline || about.timeline.length === 0) && (
+                    <p className="text-xs text-[#9CA3AF] italic">No timeline entries added yet. Defaults will be shown on the site.</p>
+                  )}
+                </div>
               </div>
             </div>
           )}

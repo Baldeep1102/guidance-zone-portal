@@ -1,19 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Quote, Heart, BookOpen, Users, Sparkles } from 'lucide-react';
+import { useApi } from '@/hooks/useApi';
 import client from '@/api/client';
 import type { SiteSettings } from '@/types';
 
 gsap.registerPlugin(ScrollTrigger);
 
+const STAT_ICONS = [BookOpen, Users, Heart, Sparkles];
+
 export function About() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
-
-  useEffect(() => {
-    client.get<SiteSettings>('/settings').then((res) => setSettings(res.data)).catch(() => {});
-  }, []);
+  const { data: settings, loading: settingsLoading } = useApi<SiteSettings>(() => client.get('/settings'));
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -59,15 +58,36 @@ export function About() {
   const aboutContent = (settings?.aboutContent || {}) as Record<string, any>;
   const biography = aboutContent.biography || 'Acharya Navneetji is a contemporary spiritual teacher dedicated to making ancient wisdom accessible to modern seekers. With over 15 years of teaching experience, he has guided thousands of students on their journey of self-discovery.';
   const philosophy = aboutContent.philosophy || '"The journey inward is the greatest adventure you will ever undertake. It requires courage, patience, and a willingness to let go of everything you think you know about yourself."';
-  const aboutImage = aboutContent.image || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&q=80';
-  const s = aboutContent.stats || {};
+  const aboutImage = aboutContent.image;
 
-  const stats = [
-    { icon: BookOpen, value: s.yearsTeaching ? `${s.yearsTeaching}+` : '15+', label: 'Years of Teaching' },
-    { icon: Users, value: s.studentsGuided ? `${s.studentsGuided}+` : '50K+', label: 'Students Worldwide' },
-    { icon: Heart, value: s.coursesOffered ? `${s.coursesOffered}+` : '500+', label: 'Satsangs Conducted' },
-    { icon: Sparkles, value: s.countriesReached ? `${s.countriesReached}` : '12', label: 'Books Published' },
+  const defaultStats = [
+    { value: '15+', label: 'Years of Teaching' },
+    { value: '50K+', label: 'Students Worldwide' },
+    { value: '500+', label: 'Satsangs Conducted' },
+    { value: '12', label: 'Books Published' },
   ];
+  const cmsStats = aboutContent.statCards as { value: string; label: string }[] | undefined;
+  const stats = (cmsStats && cmsStats.length > 0 ? cmsStats : defaultStats).map((s, i) => ({
+    ...s,
+    icon: STAT_ICONS[i % STAT_ICONS.length],
+  }));
+
+  const defaultPhilosophy = [
+    { title: 'Practical Wisdom', description: 'Spirituality is not about escaping life but engaging with it more fully. Every teaching is designed to be applied in daily life.' },
+    { title: 'Direct Experience', description: 'True understanding comes from direct experience, not mere intellectual knowledge. Practices are designed to lead you to your own insights.' },
+    { title: 'Compassionate Guidance', description: 'The path is walked with gentleness and patience. Each seeker is met where they are, with understanding and support.' },
+  ];
+  const philosophyCards = (aboutContent.philosophyCards as { title: string; description: string }[] | undefined) || defaultPhilosophy;
+
+  const defaultTimeline = [
+    { year: '2008', event: 'Began teaching meditation in small groups' },
+    { year: '2012', event: 'Published first book, "The Silent Path"' },
+    { year: '2015', event: 'Established GuZo as a spiritual learning platform' },
+    { year: '2018', event: 'Launched first online courses' },
+    { year: '2022', event: 'Reached 50,000 students worldwide' },
+    { year: '2026', event: 'Continuing to guide seekers on the path' },
+  ];
+  const timeline = (aboutContent.timeline as { year: string; event: string }[] | undefined) || defaultTimeline;
 
   return (
     <div className="min-h-screen bg-[#F6F7F9] grain-overlay pt-24 lg:pt-32 pb-20">
@@ -76,11 +96,15 @@ export function About() {
         <div ref={sectionRef} className="flex flex-col lg:flex-row gap-12 lg:gap-20 mb-20 lg:mb-32">
           {/* Image */}
           <div className="about-image w-full lg:w-[45vw] h-[50vh] lg:h-[70vh] rounded-[28px] overflow-hidden card-shadow-light flex-shrink-0">
-            <img
-              src={aboutImage}
-              alt="Acharya Navneetji"
-              className="w-full h-full object-cover"
-            />
+            {settingsLoading || !aboutImage ? (
+              <div className="w-full h-full bg-[#E5E7EB] animate-pulse" />
+            ) : (
+              <img
+                src={aboutImage}
+                alt="Acharya Navneetji"
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
 
           {/* Content */}
@@ -137,20 +161,7 @@ export function About() {
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            {[
-              {
-                title: 'Practical Wisdom',
-                description: 'Spirituality is not about escaping life but engaging with it more fully. Every teaching is designed to be applied in daily life.',
-              },
-              {
-                title: 'Direct Experience',
-                description: 'True understanding comes from direct experience, not mere intellectual knowledge. Practices are designed to lead you to your own insights.',
-              },
-              {
-                title: 'Compassionate Guidance',
-                description: 'The path is walked with gentleness and patience. Each seeker is met where they are, with understanding and support.',
-              },
-            ].map((item, index) => (
+            {philosophyCards.map((item, index) => (
               <div
                 key={index}
                 className="bg-white rounded-[22px] card-shadow-light p-6 lg:p-8"
@@ -180,14 +191,7 @@ export function About() {
             </h2>
           </div>
           <div className="max-w-3xl mx-auto">
-            {[
-              { year: '2008', event: 'Began teaching meditation in small groups' },
-              { year: '2012', event: 'Published first book, "The Silent Path"' },
-              { year: '2015', event: 'Established GuZo as a spiritual learning platform' },
-              { year: '2018', event: 'Launched first online courses' },
-              { year: '2022', event: 'Reached 50,000 students worldwide' },
-              { year: '2026', event: 'Continuing to guide seekers on the path' },
-            ].map((item, index) => (
+            {timeline.map((item, index) => (
               <div
                 key={index}
                 className="flex items-start gap-6 lg:gap-10 pb-8 last:pb-0"
