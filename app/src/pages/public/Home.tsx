@@ -28,7 +28,7 @@ export function Home() {
   const { data: talks } = useApi<Talk[]>(talksApi.getAll);
   const { data: books } = useApi<Book[]>(booksApi.getAll);
   const { data: coursesData } = useApi<Course[]>(coursesApi.getAll);
-  const { data: settings } = useApi<SiteSettings>(() => client.get('/settings'));
+  const { data: settings, loading: settingsLoading } = useApi<SiteSettings>(() => client.get('/settings'));
 
   const featuredTalks = (talks || []).filter(t => t.featured).slice(0, 3);
   const featuredBooks = (books || []).filter(b => b.featured).slice(0, 3);
@@ -38,7 +38,7 @@ export function Home() {
   const ctaContent = settings?.ctaContent;
   const satsang = settings?.satsangSchedule as Record<string, string> | undefined;
   const heroImages = settings?.heroImages as string[] | undefined;
-  const heroPortrait = heroImages?.[0] || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80';
+  const heroPortrait = heroImages?.[0];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -130,20 +130,28 @@ export function Home() {
         <div className="absolute inset-0 flex items-center px-6 lg:px-[6vw]">
           {/* Portrait Card */}
           <div className="hero-portrait absolute left-[6vw] top-[14vh] w-[40vw] h-[72vh] rounded-[28px] overflow-hidden card-shadow-light hidden lg:block">
-            <img
-              src={heroPortrait}
-              alt="Acharya Navneetji"
-              className="w-full h-full object-cover"
-            />
+            {settingsLoading || !heroPortrait ? (
+              <div className="w-full h-full bg-[#E5E7EB] animate-pulse" />
+            ) : (
+              <img
+                src={heroPortrait}
+                alt="Acharya Navneetji"
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
 
           {/* Mobile Portrait */}
           <div className="hero-portrait lg:hidden absolute left-1/2 -translate-x-1/2 top-[12vh] w-[70vw] h-[35vh] rounded-[28px] overflow-hidden card-shadow-light">
-            <img
-              src={heroPortrait}
-              alt="Acharya Navneetji"
-              className="w-full h-full object-cover"
-            />
+            {settingsLoading || !heroPortrait ? (
+              <div className="w-full h-full bg-[#E5E7EB] animate-pulse" />
+            ) : (
+              <img
+                src={heroPortrait}
+                alt="Acharya Navneetji"
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
 
           {/* Text Block */}
@@ -225,7 +233,7 @@ export function Home() {
             {/* Featured Video */}
             <div className="featured-video w-full lg:w-[54vw] h-[40vh] lg:h-[56vh] rounded-[28px] overflow-hidden card-shadow-light relative group">
               <img
-                src={featuredTalks[0]?.thumbnail || 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=800&q=80'}
+                src={featuredTalks[0]?.thumbnail ?? undefined}
                 alt="Featured teaching"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />

@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { Plus, Edit2, Trash2, Search, X, Check, Play } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Plus, Edit2, Trash2, Search, X, Check, Play, Upload, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useApi } from '@/hooks/useApi';
 import { talksApi } from '@/api/talks';
+import { adminApi } from '@/api/admin';
 import type { Talk } from '@/types';
 
 export function AdminTalks() {
@@ -25,6 +26,23 @@ export function AdminTalks() {
     featured: false,
   });
   const [tagInput, setTagInput] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
+
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const res = await adminApi.uploadFile(file);
+      setFormData({ ...formData, thumbnail: res.data.url });
+    } catch {
+      alert('Failed to upload thumbnail');
+    } finally {
+      setIsUploading(false);
+      if (thumbnailInputRef.current) thumbnailInputRef.current.value = '';
+    }
+  };
 
   const handleSave = async () => {
     if (!formData.title || !formData.youtubeUrl) return;
@@ -174,11 +192,17 @@ export function AdminTalks() {
             {filteredTalks.map((talk) => (
               <div key={talk.id} className="bg-white rounded-[22px] card-shadow-light overflow-hidden">
                 <div className="aspect-video overflow-hidden relative">
-                  <img
-                    src={talk.thumbnail || 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=800&q=80'}
-                    alt={talk.title}
-                    className="w-full h-full object-cover"
-                  />
+                  {talk.thumbnail ? (
+                    <img
+                      src={talk.thumbnail}
+                      alt={talk.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-[#E5E7EB] flex items-center justify-center">
+                      <Play className="w-10 h-10 text-[#9CA3AF]" />
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                     <Play className="w-12 h-12 text-white" fill="white" />
                   </div>
@@ -274,25 +298,75 @@ export function AdminTalks() {
                   placeholder="https://youtube.com/embed/..."
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm text-[#374151] mb-1 block">Thumbnail URL</label>
-                  <Input
-                    value={formData.thumbnail || ''}
-                    onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-                    className="rounded-xl border-[#E5E7EB]"
-                    placeholder="Image URL"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm text-[#374151] mb-1 block">Duration</label>
-                  <Input
-                    value={formData.duration}
-                    onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                    className="rounded-xl border-[#E5E7EB]"
-                    placeholder="e.g., 45:30"
-                  />
-                </div>
+              <div>
+                <label className="text-sm text-[#374151] mb-1 block">
+                  Thumbnail Image <span className="text-[#9CA3AF]">(Recommended: 640 x 360px, max 5MB)</span>
+                </label>
+                <input
+                  ref={thumbnailInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleThumbnailUpload}
+                  className="hidden"
+                />
+                {formData.thumbnail ? (
+                  <div className="flex items-start gap-3">
+                    <div className="w-40 aspect-video rounded-lg overflow-hidden border border-[#E5E7EB] flex-shrink-0">
+                      <img src={formData.thumbnail} alt="Thumbnail preview" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="rounded-lg border-[#E5E7EB]"
+                        disabled={isUploading}
+                        onClick={() => thumbnailInputRef.current?.click()}
+                      >
+                        <Upload className="w-3 h-3 mr-1" />
+                        {isUploading ? 'Uploading...' : 'Change'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="rounded-lg border-red-200 text-red-500 hover:bg-red-50"
+                        onClick={() => setFormData({ ...formData, thumbnail: '' })}
+                      >
+                        <X className="w-3 h-3 mr-1" />
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => thumbnailInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-6 rounded-xl border-2 border-dashed border-[#E5E7EB] hover:border-[#7B6CFF] hover:bg-[#7B6CFF]/5 transition-colors text-sm text-[#6B7280]"
+                  >
+                    {isUploading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-[#7B6CFF] border-t-transparent rounded-full animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Image className="w-5 h-5" />
+                        Click to upload thumbnail
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+              <div>
+                <label className="text-sm text-[#374151] mb-1 block">Duration</label>
+                <Input
+                  value={formData.duration}
+                  onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                  className="rounded-xl border-[#E5E7EB]"
+                  placeholder="e.g., 45:30"
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

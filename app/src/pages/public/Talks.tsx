@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Play, Clock, Search } from 'lucide-react';
+import { Play, Clock, Search, Video } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { talksApi } from '@/api/talks';
@@ -98,11 +98,17 @@ export function Talks() {
                 onClick={() => setSelectedTalk(talk)}
                 className="w-full h-[50vh] lg:h-[60vh] rounded-[28px] overflow-hidden card-shadow-light relative group cursor-pointer"
               >
-                <img
-                  src={talk.thumbnail ?? undefined}
-                  alt={talk.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+                {talk.thumbnail ? (
+                  <img
+                    src={talk.thumbnail}
+                    alt={talk.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-[#E5E7EB] flex items-center justify-center">
+                    <Video className="w-16 h-16 text-[#9CA3AF]" />
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <button className="w-20 h-20 lg:w-24 lg:h-24 rounded-full bg-[#7B6CFF] flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
@@ -172,11 +178,17 @@ export function Talks() {
                 className="group cursor-pointer"
               >
                 <div className="relative aspect-video rounded-[22px] overflow-hidden card-shadow-light mb-4">
-                  <img
-                    src={talk.thumbnail ?? undefined}
-                    alt={talk.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
+                  {talk.thumbnail ? (
+                    <img
+                      src={talk.thumbnail}
+                      alt={talk.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-[#E5E7EB] flex items-center justify-center">
+                      <Video className="w-10 h-10 text-[#9CA3AF]" />
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <div className="w-14 h-14 rounded-full bg-[#7B6CFF] flex items-center justify-center">
                       <Play className="w-6 h-6 text-white ml-0.5" fill="white" />
