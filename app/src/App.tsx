@@ -17,6 +17,10 @@ import { Courses } from '@/pages/public/Courses';
 import { Dashboard } from '@/pages/public/Dashboard';
 import { Downloads } from '@/pages/public/Downloads';
 import { Projects } from '@/pages/public/Projects';
+import { AskAcharyaJi } from '@/pages/public/AskAcharyaJi';
+import { FAQ } from '@/pages/public/FAQ';
+import { Terms } from '@/pages/public/Terms';
+import { Privacy } from '@/pages/public/Privacy';
 import { Login } from '@/pages/public/Login';
 import { Signup } from '@/pages/public/Signup';
 import { VerifyEmail } from '@/pages/public/VerifyEmail';
@@ -140,6 +144,10 @@ function App() {
           <Route path="/courses" element={<PublicLayout><Courses /></PublicLayout>} />
           <Route path="/downloads" element={<PublicLayout><Downloads /></PublicLayout>} />
           <Route path="/projects" element={<PublicLayout><Projects /></PublicLayout>} />
+          <Route path="/ask-acharya-ji" element={<PublicLayout><AskAcharyaJi /></PublicLayout>} />
+          <Route path="/faq" element={<PublicLayout><FAQ /></PublicLayout>} />
+          <Route path="/terms" element={<PublicLayout><Terms /></PublicLayout>} />
+          <Route path="/privacy" element={<PublicLayout><Privacy /></PublicLayout>} />
 
           {/* Auth Routes */}
           <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />

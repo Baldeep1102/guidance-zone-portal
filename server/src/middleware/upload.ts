@@ -35,3 +35,9 @@ export const upload = multer({
     }
   },
 });
+
+// Larger limit for downloadable files (PDFs, audio, video, etc.)
+export const uploadFile = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+});

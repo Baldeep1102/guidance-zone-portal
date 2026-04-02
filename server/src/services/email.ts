@@ -89,6 +89,48 @@ export async function sendRegistrationConfirmation(
   });
 }
 
+export async function sendContactEmail(
+  senderName: string,
+  senderEmail: string,
+  senderPhone: string,
+  question: string,
+) {
+  const recipients = ['nishantsharmasola@gmail.com', 'amazingbaldeep@gmail.com'];
+
+  if (!resend) {
+    logEmailSkip(recipients.join(', '), `Ask Acharya Ji: ${senderName}`);
+    console.log(`  → From: ${senderName} <${senderEmail}> | Phone: ${senderPhone}`);
+    console.log(`  → Question: ${question}`);
+    return;
+  }
+
+  await resend.emails.send({
+    from: env.FROM_EMAIL,
+    to: recipients,
+    replyTo: senderEmail,
+    subject: `Ask Acharya Ji — New question from ${senderName}`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px;">
+        <div style="text-align: center; margin-bottom: 32px;">
+          <h1 style="color: #111827; font-size: 24px; margin: 0;">Guidance Zone</h1>
+          <p style="color: #6B7280; font-size: 14px; margin-top: 4px;">New question submitted</p>
+        </div>
+        <div style="background: #f9fafb; border-radius: 16px; padding: 32px;">
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr><td style="color: #6B7280; font-size: 13px; padding: 6px 0;">Name</td><td style="color: #111827; font-size: 15px; padding: 6px 0; font-weight: 500;">${senderName}</td></tr>
+            <tr><td style="color: #6B7280; font-size: 13px; padding: 6px 0;">Email</td><td style="color: #111827; font-size: 15px; padding: 6px 0;"><a href="mailto:${senderEmail}" style="color: #7B6CFF;">${senderEmail}</a></td></tr>
+            <tr><td style="color: #6B7280; font-size: 13px; padding: 6px 0;">Phone</td><td style="color: #111827; font-size: 15px; padding: 6px 0;">${senderPhone || 'Not provided'}</td></tr>
+          </table>
+          <div style="border-top: 1px solid #e5e7eb; padding-top: 16px;">
+            <p style="color: #6B7280; font-size: 13px; margin: 0 0 8px;">Question:</p>
+            <p style="color: #111827; font-size: 15px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${question}</p>
+          </div>
+        </div>
+      </div>
+    `,
+  });
+}
+
 export async function sendPasswordResetEmail(to: string, name: string, token: string) {
   const resetUrl = `${env.CLIENT_URL}/reset-password?token=${token}`;
 

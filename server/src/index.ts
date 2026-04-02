@@ -59,6 +59,23 @@ app.get('/api/v1/settings', async (_req, res) => {
   }
 });
 
+// Contact form endpoint (public)
+app.post('/api/v1/contact', async (req, res) => {
+  try {
+    const { name, email, phone, question } = req.body;
+    if (!name || !email || !question) {
+      res.status(400).json({ error: 'Name, email, and question are required' });
+      return;
+    }
+    const { sendContactEmail } = await import('./services/email.js');
+    await sendContactEmail(name, email, phone || '', question);
+    res.json({ message: 'Your question has been submitted. We will get back to you soon.' });
+  } catch (err) {
+    console.error('Contact form error:', err);
+    res.status(500).json({ error: 'Failed to send your question. Please try again later.' });
+  }
+});
+
 // Health check
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

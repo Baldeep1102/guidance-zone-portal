@@ -31,10 +31,10 @@ export function Footer() {
       { label: 'Upcoming Events', path: '/courses' },
     ],
     support: [
-      { label: 'Contact Us', path: 'mailto:hello@guzo.org' },
-      { label: 'FAQ', path: '#' },
-      { label: 'Privacy Policy', path: '#' },
-      { label: 'Terms of Service', path: '#' },
+      { label: 'Ask Acharya Ji', path: '/ask-acharya-ji' },
+      { label: 'FAQ', path: '/faq' },
+      { label: 'Privacy Policy', path: '/privacy' },
+      { label: 'Terms of Service', path: '/terms' },
     ],
   };
 
@@ -126,21 +126,12 @@ export function Footer() {
               <ul className="space-y-3">
                 {footerLinks.support.map((link) => (
                   <li key={link.label}>
-                    {link.path.startsWith('mailto:') || link.path === '#' ? (
-                      <a
-                        href={link.path}
-                        className="text-[#6B7280] text-sm hover:text-[#7B6CFF] transition-colors"
-                      >
-                        {link.label}
-                      </a>
-                    ) : (
-                      <Link
-                        to={link.path}
-                        className="text-[#6B7280] text-sm hover:text-[#7B6CFF] transition-colors"
-                      >
-                        {link.label}
-                      </Link>
-                    )}
+                    <Link
+                      to={link.path}
+                      className="text-[#6B7280] text-sm hover:text-[#7B6CFF] transition-colors"
+                    >
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -154,10 +145,10 @@ export function Footer() {
             {footerContent.copyright || `${currentYear} GuZo - Guidance Zone. All rights reserved.`}
           </p>
           <div className="flex items-center gap-6">
-            <Link to="#" className="text-[#9CA3AF] text-sm hover:text-[#7B6CFF] transition-colors">
+            <Link to="/privacy" className="text-[#9CA3AF] text-sm hover:text-[#7B6CFF] transition-colors">
               Privacy
             </Link>
-            <Link to="#" className="text-[#9CA3AF] text-sm hover:text-[#7B6CFF] transition-colors">
+            <Link to="/terms" className="text-[#9CA3AF] text-sm hover:text-[#7B6CFF] transition-colors">
               Terms
             </Link>
             <a

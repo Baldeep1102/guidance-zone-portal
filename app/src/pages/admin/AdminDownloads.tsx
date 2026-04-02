@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { Plus, Edit2, Trash2, Search, X, Check, FileText } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Plus, Edit2, Trash2, Search, X, Check, FileText, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { downloadsApi } from '@/api/downloads';
+import { adminApi } from '@/api/admin';
 import { useApi } from '@/hooks/useApi';
 import type { Download } from '@/types';
 
@@ -12,10 +13,34 @@ export function AdminDownloads() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDownload, setEditingDownload] = useState<Download | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     title: '', description: '', category: 'Meditation', fileUrl: '', fileType: 'pdf',
     fileSize: 0, thumbnail: '', featured: false,
   });
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const res = await adminApi.uploadDownloadFile(file);
+      const ext = file.name.split('.').pop()?.toLowerCase() || '';
+      const typeMap: Record<string, string> = { pdf: 'pdf', mp3: 'audio', wav: 'audio', ogg: 'audio', mp4: 'video', mov: 'video', jpg: 'image', jpeg: 'image', png: 'image', webp: 'image' };
+      setFormData({
+        ...formData,
+        fileUrl: res.data.url,
+        fileSize: file.size,
+        fileType: typeMap[ext] || 'pdf',
+      });
+    } catch {
+      alert('Failed to upload file');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const handleSave = async () => {
     if (!formData.title || !formData.fileUrl) return;
@@ -66,6 +91,13 @@ export function AdminDownloads() {
   );
 
   const categories = ['Meditation', 'Devotion', 'Practice', 'Wisdom', 'Community'];
+
+  function formatFileSize(bytes?: number | null): string {
+    if (!bytes) return '';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
 
   if (loading) {
     return (
@@ -153,8 +185,65 @@ export function AdminDownloads() {
                 </div>
               </div>
               <div>
-                <label className="text-sm text-[#374151] mb-1 block">File URL</label>
-                <Input value={formData.fileUrl} onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })} className="rounded-xl border-[#E5E7EB]" placeholder="https://..." />
+                <label className="text-sm text-[#374151] mb-1 block">
+                  File <span className="text-[#9CA3AF]">(max 50MB)</span>
+                </label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                {formData.fileUrl ? (
+                  <div className="flex items-center gap-3 p-3 rounded-xl border border-[#E5E7EB] bg-[#FAFAFA]">
+                    <FileText className="w-5 h-5 text-[#7B6CFF] flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-[#111827] truncate">{formData.fileUrl}</p>
+                      {formData.fileSize > 0 && <p className="text-xs text-[#9CA3AF]">{formatFileSize(formData.fileSize)}</p>}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="rounded-lg border-[#E5E7EB]"
+                        disabled={isUploading}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Upload className="w-3 h-3 mr-1" />
+                        {isUploading ? 'Uploading...' : 'Change'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="rounded-lg border-red-200 text-red-500 hover:bg-red-50"
+                        onClick={() => setFormData({ ...formData, fileUrl: '', fileSize: 0 })}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-6 rounded-xl border-2 border-dashed border-[#E5E7EB] hover:border-[#7B6CFF] hover:bg-[#7B6CFF]/5 transition-colors text-sm text-[#6B7280]"
+                  >
+                    {isUploading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-[#7B6CFF] border-t-transparent rounded-full animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-5 h-5" />
+                        Click to upload file
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="featured" checked={formData.featured} onChange={(e) => setFormData({ ...formData, featured: e.target.checked })} className="w-4 h-4 rounded border-[#E5E7EB] text-[#7B6CFF]" />
